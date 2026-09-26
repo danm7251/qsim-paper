@@ -58,6 +58,20 @@ $
   )
 $
 
+#let p0_matrix = $
+  mat(delim: "[",
+    1, 0;
+    0, 0;
+  )
+$
+
+#let p1_matrix = $
+  mat(delim: "[",
+    0, 0;
+    0, 1;
+  )
+$
+
 #hadamard_matrix
 #identity_matrix
 #x_matrix

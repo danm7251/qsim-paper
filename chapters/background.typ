@@ -2,6 +2,8 @@
 
 #heading[Background]
 
+#text(red)[*Note: Flesh out explanations, add references and missing content - Sunday 2h*]
+
 // Intro Paragraph
 The following chapter will explore some of the concepts that will appear regularly in the following chapters. Additionally it will add some context surrounding current quantum simulators and related works.
 
@@ -86,19 +88,27 @@ Where $tilde(U)_t$ is the full-system matrix of a single-qubit gate at target $t
 For controlled two qubit gates it becomes more complex. They full-system matrix of such a gate can be expressed as:
 
 $
-  tilde("CU")_(c,t)=I^(times.o c) times.o U times.o I^(\(n-t-1\))
+  tilde("CU")_(c,t)=P_0 times.o I + P_1 times.o U
 $
 
-#text(red)[*Note: Correct formula, find source and explain*]
+Where $tilde("CU")_(c,t)$ is the full-system matrix of a controlled two-qubit gate, and projectors $P_0$ and $P_1$ expand as:
 
-However it is clear, the time and space complexity of this naive approach is far too great, not to in addition to the system matrix, a simulator is already having to store the statevectors $2^n$ complex amplitudes in memory. It turns out that there is an approach that both limits the simulators space complexity to the base $O(2^n)$ and also speeds up execution time with workloads much more suited to modern processors.
+$
+  ket(0)bra(0) = #p0_matrix, quad ket(1)bra(1) = #p1_matrix
+$
+
+Since $I ket(psi)=ket(psi)$ leaving the state unchanged, this represents the branch where the controlled gate is not triggered, $P_0$ simply maps this onto the corresponding amplitudes. Vice versa, $P_1$ maps the operation $U$ onto the amplitudes where the control qubit is activated. The downside being that two full-system matrices must be constructed and combined before being applied.
+
+#text(red)[*Note: Source tenessee university, this equation is simplified*]
+
+It is clear, the time and space complexity of this naive approach is far too great, not to mention in addition to the system matrix, a simulator is already having to store the statevectors $2^n$ complex amplitudes in memory. It turns out that there is an approach that both limits the simulators space complexity to the base $O(2^n)$ and also speeds up execution time with workloads much more suited to modern processors.
 
 == Direct indexing
 Rather than attempting to apply a full-system matrix to the entire statevector, this approach splits the statevector into smaller two-dimensional subspaces, pairs of amplitudes whose basis states differ only in the target qubits value. Then each pair can be multiplied independently by the simpler $2 times 2$ gate matrix itself.
 
-Iterating through the $2^(n-1)$ pairs means each amplitude in the statevector is operated on once. Applying the gate to each pair is mathematically equivalent to applying the full-system matrix to the entire statevector.
+Iterating through the $2^(n-1)$ pairs means each amplitude in the statevector is operated on once. Applying the gate to each pair is mathematically equivalent to applying the full-system matrix to the entir
 
-#text(red)[*Note: Find source (QuEST paper?) and proof*]
+#text(red)[*Note: Find source (QuEST paper?) and detailed proof*]
 
 The resulting amplitudes can be written back into the statevector while the while the two necessary original amplitudes and the four matrix coefficients are already available in memory. This removes any non-constant space complexity terms that are being added to the statevectors already harsh $O(2^n)$ space complexity during gate application.
 
@@ -116,7 +126,7 @@ $
 
 so, if it leaves the state unchanged.
 
-#text(red)[*Note: As wierdly worded as GK theorem is find way to reword this, add source.*]
+#text(red)[*Note: As wierdly worded as GK theorem is, find way to reword this, add source. Expand on this if there is time, if not remove.*]
 
 // Computational concepts
 

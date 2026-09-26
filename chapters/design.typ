@@ -1,5 +1,7 @@
 #heading[Design & Implementation]
 
+#text(red)[*Note: Restructure, explain kernel algorithms in more detail, reduce repitition - Sunday 1.5h*]
+
 == Development environment
 
 Rust was chosen as the primary development language for its performance and safety guarantees while still allowing unsafe, direct memory management if necessary. Its zero-cost abstractions allow higher level intuitive interfaces to be used without causing additional runtime overhead.
@@ -26,9 +28,11 @@ The simulator is designed around a common instruction based representation of qu
 
 Each instruction describes a quantum operation and the qubits it acts on, while the state representation executing said instruction is responsible for its implementation. This implementation must validate the inputs, and dispatch the operation to the appropriate kernel. The kernels are collections of low-level functions specific to each backend, they take the backends internal state and mutate it accordingly.
 
-#text(red)[Explain Api::Instruction and circuit modelling in more detail]
+#text(red)[*Note: Explain instructions and circuit modelling in more detail*]
 
 === Statevector backend
+
+#text(red)[*Note: Consider how specific is too specific*]
 
 The statevector representation itself is extraordinarily simple, the only requirement is a heap-backed ordered mutable buffer of complex numbers. That way the basis state is simply encoded by the position of the amplitude in the statevector using big-endian ordering.
 
@@ -41,6 +45,8 @@ The statevector also needs to provide a gate matrix as well as a mutable referen
 === Configuration
 
 The statevector is also composed of a configuration structure which allows enabling hardware acceleration such as FMA or AVX. It can either be created explicitly and then supplied during construction, or via the default constructor where it is populated automatically after verifying which hardware-specific features are available on the host machine. If created explicitly however, the host machine capabilities are still validated to ensure unsupported code blocks aren't entered. This configuration is then used during routing when selecting the optimal kernel for the operation.
+
+#text(red)[*Note: Structure below sucks, explain SIMD algorithm*]
 
 === Kernel implementations
 
