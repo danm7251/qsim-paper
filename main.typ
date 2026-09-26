@@ -27,6 +27,7 @@
     ]
 )
 #set text(font: "Arial")
+#set heading(numbering: "1.1")
 
 #[
     #text(size: 14pt)[
@@ -66,4 +67,8 @@
 
 #[
     #include "chapters/references.typ"
+] <no-wc>
+
+#[
+    #include "chapters/appendix.typ"
 ] <no-wc>
