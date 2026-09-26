@@ -2,7 +2,6 @@
 #show: word-count.with(
     exclude: (
         <no-wc>,
-        heading,
     )
 )
 
@@ -21,6 +20,11 @@
 #set page(
     paper: "a4",
     margin: 2.5cm,
+    footer: context [
+        #align(center)[
+        #counter(page).display()
+        ]
+    ]
 )
 #set text(font: "Arial")
 
@@ -54,8 +58,10 @@
 #include "chapters/evaluation.typ"
 #pagebreak()
 
+/*
 #include "chapters/discussion.typ"
 #pagebreak()
+*/
 
 #include "chapters/conclusion.typ"
 #pagebreak()

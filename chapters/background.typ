@@ -11,7 +11,7 @@ Throughout this chapter the following mathematical background will be assumed:
 - Complex numbers
 - Linear algebra
 
-=== Statevectors
+== Statevectors
 // Explain high-level concepts like Qubits, State, Circuit
 An $n$-qubit statevector represents a quantum state using $2^n$ complex amplitudes, it is conventionally written as:
 
@@ -40,7 +40,7 @@ $
 
 Therefore the space complexity for a statevector must be $O(2^n)$.
 
-==== Gates
+== Gates
 Quantum gates are operations that are applied to a quantum state. When the state is represented as a statevector, a gate is represented as a matrix and applied using matrix-vector multiplication:
 
 $
@@ -70,7 +70,7 @@ The controlled gates take two qubits, one control, one target. The premise is si
 
 Earlier it was stated that to apply a matrix to the statevector matrix-vector multiplication is used. But for this multiplication to be valid the number of columns in the matrix must be equal to the number of amplitudes in the vector. In most situations a statevector is more than one qubit. So to apply a single-qubit gate a full-system matrix that fulfils this can be used. This can be constructed using Kronecker products.
 
-=== Kronecker products
+== Kronecker products
 The Kronecker product, denoted by $times.o$, combines two smaller matrices to produce a larger matrix. Every element in the first matrix is multiplied by the second matrix. If matrix $A$ has dimensions $a times b$ and matrix B has dimensions $c times d$ then $A times.o B$ produces a matrix with dimensions $a c times b d$.
 
 Therefore in statevector simulation it can be used to expand a gate matrix to a full-system matrix that is valid for multiplication with the statevector. For single-qubit gates:
@@ -93,7 +93,7 @@ $
 
 However it is clear, the time and space complexity of this naive approach is far too great, not to in addition to the system matrix, a simulator is already having to store the statevectors $2^n$ complex amplitudes in memory. It turns out that there is an approach that both limits the simulators space complexity to the base $O(2^n)$ and also speeds up execution time with workloads much more suited to modern processors.
 
-=== Direct indexing
+== Direct indexing
 Rather than attempting to apply a full-system matrix to the entire statevector, this approach splits the statevector into smaller two-dimensional subspaces, pairs of amplitudes whose basis states differ only in the target qubits value. Then each pair can be multiplied independently by the simpler $2 times 2$ gate matrix itself.
 
 Iterating through the $2^(n-1)$ pairs means each amplitude in the statevector is operated on once. Applying the gate to each pair is mathematically equivalent to applying the full-system matrix to the entire statevector.
@@ -103,7 +103,7 @@ Iterating through the $2^(n-1)$ pairs means each amplitude in the statevector is
 The resulting amplitudes can be written back into the statevector while the while the two necessary original amplitudes and the four matrix coefficients are already available in memory. This removes any non-constant space complexity terms that are being added to the statevectors already harsh $O(2^n)$ space complexity during gate application.
 
 // Stabilizer
-=== Gottesman-Knill theorem
+== Gottesman-Knill theorem
 Updating the statevector pair by pair is orders of magnitude more efficient however is still bound by the $O(2^n)$ space required to store the amplitudes themselves. The GK theorem poses the question: can the state of a quantum system be represented more compactly and if so for what classes of circuits does this hold?
 
 The answer is yes, with stabilizer circuits. This is a class of circuit that is composed entirely of Clifford gates, a set of gates that includes but is not limited to: the Pauli $X$, $Y$ and $Z$ gates, the Hadamard gate and the $"CNOT"$ gate. The set of possible states allowed by such gates allows a different representation, rather than tracking the amplitudes of every basis state, it can be described by the Pauli operators that stabilise it.
@@ -115,6 +115,8 @@ $
 $
 
 so, if it leaves the state unchanged.
+
+#text(red)[*Note: As wierdly worded as GK theorem is find way to reword this, add source.*]
 
 // Computational concepts
 

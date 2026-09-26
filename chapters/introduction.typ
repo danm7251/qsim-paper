@@ -48,6 +48,13 @@ However, simulation comes with its own set of limitations. The core issue is the
 // - 2) Comprehensive list and classification of objectives
 
 // Paragraph 1: TODO
+This project aims to investigate the implementation of quantum circuit simulators, focusing on statevector simulation techniques. The objectives are to develop a statevector simulator, investigate the algorithms used to execute quantum operations and evaluate their computational characteristics across various workloads.
+
+Objectives:
+- Implement a functional quantum circuit simulator using a statevector representation.
+- Implement common single-qubit gates, controlled two-qubit gates and measurement.
+- Implement multiple high-level approaches to computing the application of quantum operations including full-system matrix and direct pair multiplication.
+- Implement multiple low-level approaches to computing the application of quantum operations including hardware acceleration.
 
 // Paragraph 2: TODO
 
