@@ -26,7 +26,7 @@ After futher analysis using perf, a tool for recording hardware counters such as
 
 This data was obtained by recording instruction count over the execution of a binary that applied one thousand Hadamard gates to a 17 qubit statevector. Five measurements were taken for each target qubit in order to reduce variability introduced by runtime overhead. However maximum the standard deviation is only 0.0000231% at target qubit 9.
 
-#text(red)[*Note: Explain memory behaviour - 30m*]
+
 
 #text(red)[*Note: Explain target feature vs algorithmic speedup - 30m*]
 
