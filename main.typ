@@ -26,13 +26,13 @@
         ]
     ]
 )
-#set text(font: "Arial")
+#set text(font: "Arial", size: 12pt)
 #set heading(numbering: "1.1")
 
 #[
-    #text(size: 14pt)[
+    /*#text(size: 14pt)[
         Word count: #total-words / 5k
-    ]
+    ]*/
 
     #align(center)[
         #include "chapters/title.typ"  
@@ -43,6 +43,11 @@
     #outline()
     #pagebreak()
 ] <no-wc>
+
+#[
+    #include "chapters/plan.typ"
+] <no-wc>
+#pagebreak()
 
 #include "chapters/abstract.typ"
 #pagebreak()

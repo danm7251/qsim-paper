@@ -4,6 +4,8 @@
 
 #text(red)[*Note: Flesh out explanations, add references and missing content - Sunday 2h*]
 
+#text(red)[*Note: First two sections covered by Nielsen and Chaung*]
+
 // Intro Paragraph
 The following chapter will explore some of the concepts that will appear regularly in the following chapters. Additionally it will add some context surrounding current quantum simulators and related works.
 
@@ -15,13 +17,13 @@ Throughout this chapter the following mathematical background will be assumed:
 
 == Statevectors
 // Explain high-level concepts like Qubits, State, Circuit
-An $n$-qubit statevector represents a quantum state using $2^n$ complex amplitudes, it is conventionally written as:
+A quantum circuit is effectively an ordered collection of operations applied to a quantum state, which is composed of qubits. Where a qubit can be considered the quantum analogue of a bit. A statevector represents a quantum state of $n$-qubits by using $2^n$ complex amplitudes, it is conventionally written as:
 
 $
   ket(psi)=sum_(i = 0)^(2^n - 1) alpha_i ket(i)
 $
 
-where $ket(i)$ is the computational basis state and $alpha_i$ is its associated probability amplitude. The probability of observing $ket(i)$ is $|alpha_i|^2$ which requires the normalisation condition:
+where $ket(i)$ is the computational basis state and $alpha_i$ is its associated probability amplitude. Each basis state can be considered a different outcome of the system. The probability of observing $ket(i)$ is $|alpha_i|^2$ which requires the normalisation condition:
 
 $
   sum_(i = 0)^(2^n - 1) |alpha_i|^2 = 1
@@ -81,7 +83,7 @@ $
   tilde(U)_t=I^(times.o t) times.o U times.o I^(\(n-t-1\))
 $
 
-#text(red)[*Note: Find source*]
+#text(red)[*Note: Add source*]
 
 Where $tilde(U)_t$ is the full-system matrix of a single-qubit gate at target $t$ and $I^(times.o t)$ denotes the Kronecker product of $t$ identity matrices. An identity matrix is a no-op which is why the gate can be expanded this way without distorting the operation.
 
@@ -106,9 +108,24 @@ It is clear, the time and space complexity of this naive approach is far too gre
 == Direct indexing
 Rather than attempting to apply a full-system matrix to the entire statevector, this approach splits the statevector into smaller two-dimensional subspaces, pairs of amplitudes whose basis states differ only in the target qubits value. Then each pair can be multiplied independently by the simpler $2 times 2$ gate matrix itself.
 
-Iterating through the $2^(n-1)$ pairs means each amplitude in the statevector is operated on once. Applying the gate to each pair is mathematically equivalent to applying the full-system matrix to the entir
+The operation can be illustrated as:
 
-#text(red)[*Note: Find source (QuEST paper?) and detailed proof*]
+$
+  mat(
+    a_(n_i);
+    a_(n_i + 2^q);
+  )
+  mapsto
+  U
+  mat(
+    a_(n_i);
+    a_(n_i + 2^q);
+  )
+$
+
+Where $n_i$ is the index of the first amplitude of the $i$th pair and the amplitudes are separated by $2^q$ where $q$ is the index of the target qubit @jones_quest_2019.
+
+Iterating through the $2^(n-1)$ pairs means each amplitude in the statevector is operated on once. Applying the gate to each pair is mathematically equivalent to applying the full-system matrix to the entire statevector in one operation.
 
 The resulting amplitudes can be written back into the statevector while the while the two necessary original amplitudes and the four matrix coefficients are already available in memory. This removes any non-constant space complexity terms that are being added to the statevectors already harsh $O(2^n)$ space complexity during gate application.
 

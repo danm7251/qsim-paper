@@ -1,4 +1,4 @@
-#heading[Discussion]
+#heading[Analysis and discussion]
 
 == Full-system matrix expansion
 
@@ -10,13 +10,21 @@ The difference in execution time also follows the same underlying scaling issue.
 
 The "CNOT" results show the same behaviour as the Hadamard results, however the difference between the two kernels is even larger. This is due to the opposite approaches they take to conditionals. Full-system matrix expansion requires two system matrices multiplying the cost by a factor of two, while the direct indexing kernel actually takes advantage of the control aspect to reduce the amount of work. Since the direct approach individually selects qubit pairs at a time to operate on, it can calculate the positions of the $c=1$ amplitudes and construct a loop condition that skips all $c=0$ amplitudes, in theory halving the workload. Due to this we should expect to see the differnce in execution time between the two kernels multiply by four when comparing the Hadamard and $"CNOT"$ experiments.
 
-#text(red)[*Quick graph of difference ratio - 20m*]
+#image("../assets/ratio.svg")
+
+Interestingly that prediction does not hold with the difference in speedup hovering around a modest factor of two.
 
 == Hardware acceleration
 
 The hardware-accelerated kernels consistently reduced execution time across both experiments compared with the portable implementation. FMA showed a modest improvement, while the AVX implementation provided the largest reduction in execution time.
 
 The target experiment revealed an established pattern as the target qubit increased. Execution time surges as the x-axis approaches the final three to four qubits, despite no change in the amount of data processed. The only variable that has changed is how the accesses are distributed in memory.
+
+After futher analysis using perf, a tool for recording hardware counters such as instruction counts and cache activity the following was found:
+
+#image("../assets/instruction-count-target.svg")
+
+This data was obtained by recording instruction count over the execution of a binary that applied one thousand Hadamard gates to a 17 qubit statevector. Five measurements were taken for each target qubit in order to reduce variability introduced by runtime overhead. However maximum the standard deviation is only 0.0000231% at target qubit 9.
 
 #text(red)[*Note: Explain memory behaviour - 30m*]
 

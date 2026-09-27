@@ -6,27 +6,11 @@ However, the field is in the Noisy Intermediate Scale Quantum (NISQ) era, charac
 
 Due to these constraints, the ability to simulate quantum circuits on classical hardware remains essential. Quantum circuit simulation involves evaluating the effect of a series of logic gates mathematically on a representation of a quantum state. This approach provides an environment free of the typical environmental noise inherent to current quantum hardware and is far more cost effective. As such, currently, the most practical way to develop and test quantum algorithms is to use classical simulators of quantum computers @cicero_simulation_2025.
 
-However, simulation comes with its own set of limitations. The core issue is the memory cost of describing a quantum state classically. The base units of quantum information are qubits (quantum bits) and to fully describe a quantum system of $N$ qubits requires tracking $2^N$ individual complex amplitudes. Even on a supercomputer such as Summit @facility_summit_2018, we can only do algorithmic simulations of a quantum circuit up to 47 qubits, which requires 2.8 petabytes of memory @cicero_simulation_2025. Mitigating this scaling is an active area of research with many approaches that trade exactness for tractability, but in the end this limitation is not escapable, as it is an inherent consequence of mapping quantum information onto classical hardware.
+However, simulation comes with its own set of limitations. The core issue is the memory cost of describing a quantum state classically. The base units of quantum information are qubits (quantum bits) and the direct conventional approach is known as statevector simulation in which to fully describe a quantum system of $N$ qubits requires tracking $2^N$ individual complex amplitudes. Even on a supercomputer such as Summit @facility_summit_2018, we can only do algorithmic simulations of a quantum circuit up to 47 qubits, which requires 2.8 petabytes of memory @cicero_simulation_2025. Mitigating this scaling is an active area of research with many approaches that trade exactness for tractability, but in the end this limitation is not escapable, as it is an inherent consequence of mapping quantum information onto classical hardware.
 
-#text(red)[*Note: Flesh out & insert 2 extra paragraphs from draft and polish - Sunday 45m*]
+One of the approaches to simulation that trades exactness for tractability is known as matrix product states or MPS. Which reduces the number of parameters from $2^n$ to roughly $2n chi^2$ where $chi$ represents the amount of entanglement (a property of quantum states) that can be represented. However this is at the cost of only being able to express an approximation of the state when $chi$ is low and entanglement high @xu_herculean_2025. The stabilizer formulism offers another approach to reducing computational cost, but similarly, only allows the simulation of specific classes of quantum circuits, losing the flexibility of other simulation methods. 
 
-// Problem Statement
-// - 1) Describe SV problem
-// - 2) Describe alternative approaches
-// - 3) Introduce project
-
-// Paragraph 1:
-// - Simulation brings new challenges.
-// - Statevector simulation is the most direct conventional approach
-// - It is general purpose and directly represents the typical physics model
-// - Qubit definition (possibly classical circuit analogy)
-// - Qubit memory scaling
-// - Qubit time scaling (if interesting)
-// - Summit supercomputer reference (check simulation method utilised)
-
-// Paragraph 2:
-// - Introduce other approaches.
-// - Stabilizer, SV mitigation, tensor, stab rank analysis
+#text(red)[*Note: Flesh out & insert 1 extra paragraphs from draft and polish - Sunday 30m*]
 
 // Paragraph 3:
 // - Describe what my paper does broadly.
@@ -38,13 +22,14 @@ However, simulation comes with its own set of limitations. The core issue is the
 // - Explores superficial qualities such as natural API
 // - Evaluates what my project offers compared to others (density, samples) etc
 
-This project aims to investigate the implementation of quantum circuit simulators, focusing on statevector simulation techniques. The objectives are to develop a statevector simulator, investigate the algorithms used to execute quantum operations and evaluate their computational characteristics across various workloads.
+This paper aims to investigate the implementation of quantum circuit simulators, focusing on statevector simulation techniques. The objectives are to develop a statevector simulator, investigate the algorithms used to execute quantum operations and evaluate their computational characteristics across various workloads.
 
-Objectives:
+Explicit objectives:
 - Implement a functional quantum circuit simulator using a statevector representation.
 - Implement common single-qubit gates, controlled two-qubit gates and measurement.
 - Implement multiple high-level approaches to computing the application of quantum operations including full-system matrix and direct pair multiplication.
-- Implement multiple low-level approaches to computing the application of quantum operations including hardware acceleration.
+- Implement multiple low-level approaches to computing the application of quantum operations utilising hardware acceleration.
+- Evaluate the computational characteristics of approaches.
 
 // Contributions
 // - 1) What I actually produced

@@ -2,6 +2,16 @@
 
 #text(red)[*Note: Restructure, explain kernel algorithms in more detail, reduce repitition - Sunday 1.5h*]
 
+#text(red)[
+  *New Plan:*
+  *- Development Environment*
+  *- Simulator Architecture*
+  *- Statevector Representation*
+  *- Gate application*
+  *- Hardware acceleration (where does config go)*
+  *- Testing, benchmarking and observability*
+]
+
 == Development environment
 
 Rust was chosen as the primary development language for its performance and safety guarantees while still allowing unsafe, direct memory management if necessary. Its zero-cost abstractions allow higher level intuitive interfaces to be used without causing additional runtime overhead.
@@ -10,25 +20,21 @@ Git was used for version control throughout so that branches could be used to de
 
 GitHub was used to host the source code and provide continuous integration through GitHub Actions. Automated unit tests were run on pushes to the default branch, on Windows and Ubuntu environments, providing correctness checks across platforms and ensuring that changes did not break logic and or unnaceptably compromise accuracy.
 
-== Testing, benchmarking and observability
+== Library Architecture
 
-Unit tests were used constantly throughout every step of development to ensure the behaviour of the simulator was as expected and innacuracies were not introduced. Due to the use of floating point arithmetic a certain degree of accumulated numerical error is inevitable. However it was required to remain within a tolerance range of $10^(-14)$ throughout tests. The Rust ecosystem also provided tools for investigating performance. 
+This project seperates the description of a quantum circuit from the statevector object used to simulate its execution. Quantum operations are represented as instructions defining the operations themselves and contain parameters pertaining to non-implementation specific information. For example rotation gate angles and qubit targeting indices. This results in a clean interface that allows introducing alternative simulation objects with different state representations in the future, such as stabilizer-based simulation without requiring changes to the circuit representation.
 
-Criterion.rs, a Rust port of the popular Haskell Criterion package, was used for execution time benchmarking and analysis. It iterates over benchmarks gathering samples and then provides a full statistical breakdown. It also supports direct comparison benchmarks useful for verifying the difference between different approaches and algorithms. This was most useful when it came to developing different gate application algorithms and analysing the effects of compiler directive placement. DHAT was used to investigate the behaviour of heap allocations. It is a custom allocator that once initialised, records the peak and total number of allocations throughout execution.
+The core component of this interface is the #text(purple)[Instruction] enum which provides variants describing different quantum operations, mainly gates. Each variant defines the parameters that may accompany it explicitly, creating a fixed structure for required inputs. The use of an enum also offers a common type the operations can be stored and processed through, making it straightforward to express an entire circuit as an ordered collection of instructions. That ability naturally lends itself to future extensions such as circuit level optimisation as the sequence could be analysed and transformed before execution.
 
-#text(red)[*Better DHAT explanation.*]
+A simulation starts by initialising a simulation object such as a statevector, with the desired number of qubits. That statevector then owns the quantum state being simulated and supplies the interface through which operations can be applied. To progress the simulation an instruction or a circuit as a collection of instructions must be passed to the statevector for execution.
 
-The Tracing crate was used to provide observability insights into circuit execution. Primarily useful when examining sub-routines such as the quantum Fourier transform which expands into a series of gates whose ordering depends on parameters such as qubit count. It provided quality-of-life features such as exporting trace data to Chrome Perfetto for examination.
+The statevector then acts as a configuration, validation and dispatch layer above the operations themselves.
 
-Rust's feature gating was used extensively throughout in coordination with these features to ensure that any accomodations for benchmarking and tracing did not introduce unnecessary overhead when unactivated.
+#text(red)[*Unfinished*]
 
-== Simulator Architecture
+#text(red)[*Kernels*]
 
-The simulator is designed around a common instruction based representation of quantum circuits, where seperate statevector and stabilizer objects can be used as the interfaces for the respective backends.
-
-Each instruction describes a quantum operation and the qubits it acts on, while the state representation executing said instruction is responsible for its implementation. This implementation must validate the inputs, and dispatch the operation to the appropriate kernel. The kernels are collections of low-level functions specific to each backend, they take the backends internal state and mutate it accordingly.
-
-#text(red)[*Note: Explain instructions and circuit modelling in more detail*]
+#text(red)[*Measurement / Loose Ends*]
 
 === Statevector backend
 
@@ -59,3 +65,15 @@ The FMA kernels follow the same algorithms as the portable direct indexing kerne
 The AVX implementation instead utilises an evolution of the direct indexing algorithm that has been rewritten to cast two pairs at once to four-lane SIMD vectors. The real and imaginary components of the amplitudes are interleaved across two four-lane vectors and the matrix coefficients are copied across an entire vector each. Then complex multiplication can be performed on multiple pairs at once increasing throughput. These kernels are compiled with the `avx` target feature to ensure that AVX instructions are actually emitted during compilation and are also required to check AVX support is available on the host machine.
 
 The different kernels therefore represent both different algorithms and different implementations of the same algorithms. Allowing the execution layer to select an implementation appropriate for the available hardware features.
+
+== Testing, benchmarking and observability
+
+Unit tests were used constantly throughout every step of development to ensure the behaviour of the simulator was as expected and innacuracies were not introduced. Due to the use of floating point arithmetic a certain degree of accumulated numerical error is inevitable. However it was required to remain within a tolerance range of $10^(-14)$ throughout tests. The Rust ecosystem also provided tools for investigating performance. 
+
+Criterion.rs, a Rust port of the popular Haskell Criterion package, was used for execution time benchmarking and analysis. It iterates over benchmarks gathering samples and then provides a full statistical breakdown. It also supports direct comparison benchmarks useful for verifying the difference between different approaches and algorithms. This was most useful when it came to developing different gate application algorithms and analysing the effects of compiler directive placement. DHAT was used to investigate the behaviour of heap allocations. It is a custom allocator that once initialised, records the peak and total number of allocations throughout execution.
+
+#text(red)[*Better DHAT explanation.*]
+
+The Tracing crate was used to provide observability insights into circuit execution. Primarily useful when examining sub-routines such as the quantum Fourier transform which expands into a series of gates whose ordering depends on parameters such as qubit count. It provided quality-of-life features such as exporting trace data to Chrome Perfetto for examination.
+
+Rust's feature gating was used extensively throughout in coordination with these features to ensure that any accomodations for benchmarking and tracing did not introduce unnecessary overhead when unactivated.

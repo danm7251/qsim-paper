@@ -2,11 +2,15 @@
 
 This chapter compares the correctness and computational cost of the various algorithms and approaches taken. It examines how execution time and memory usage evolve over an increasing number of qubits.
 
-== Experimental configuration
+== Experimental configuration & Methodology
 
-The results were achieved using a desktop computer equipped with a Ryzen 5 1600 processor and 16 GB of RAM. The operating system was CachyOS, a Linux distribution. The benchmarks were compiled and run on the nightly-2026-05-27 Rust toolchain.
+The following results were achieved using a desktop computer equipped with a Ryzen 5 1600 processor and 16 GB of RAM. The operating system was CachyOS, a Linux distribution. The benchmarks were compiled and run on the nightly-2026-05-27 Rust toolchain.
 
 #text(red)[*Note: Provide a commit hash on main branch with all experiments ready to run*]
+
+Each experiment that measured execution time was run using Criterion's benchmarking harness. Before collecting measurements, Criterion performed a three second warm-up period during which the benchmark is repeatedly executed without measurement in order to allow the system and host machines hardware to adapt to the load. It then ran benchmarks repeatedly over thousands of iterations to obtain 100 samples. It then provided a statistical analysis of said samples providing a mean, standard deviation and confidence intervals.
+
+Experiments that measured memory usage were run using DHAT which provides heap profiling.
 
 == Full-system matrix against direct indexing
 
@@ -50,7 +54,7 @@ All three implementations show the expected exponential increase in execution ti
 
 This experiment differs in the last in that the circuit size remained constant at $n=17$, this time the independent variable was the target qubit. Each kernel was aside from AVX was tested at all target qubit positions from zero to $n-1$. The AVX kernel cannot accept a target qubit equal to $n-1$ since the target amplitudes are interleaved with a stride equal to one. Running this experiment provided the following results:
 
-#text(red)[*Note: Fascinating, provide graph*]
+#image("../assets/hardware-h-target.svg")
 
 The AVX implementation once again, consistently outperforms the other implementations, at every measurement value it can be applied to. There is an evident increase in execution time as the target approaches $n-1$. However on the final three targets there are peaks at $n-3$ and $n-1$ with a trough at $n-2$. This pattern was reproduced at various constant qubit counts.
 
