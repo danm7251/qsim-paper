@@ -4,7 +4,7 @@
 
 #text(red)[*Note: Section 2.5 supported Tennessee University reference.*]
 
-This section will introduce the basics of quantum computing using statevectors and some core principles behind some of the techniques used before introducing an alternative approach to simulation. #text(red)[*Alternative approach may be cut it's not particularly relevant anymore.*] The material presented in the first four subsections is a brief introduction to the quantum computing foundations required by this project and follows Nielsen and Chuang @nielsen_quantum_2010.
+This section will introduce the basics of quantum computing using statevectors and some core principles behind some of the techniques used before introducing an alternative approach to simulation. The material presented in the first four subsections is a brief introduction to the quantum computing foundations required by this project and follows Nielsen and Chuang @nielsen_quantum_2010.
 
 == Qubits
 A qubit can be considered the quantum analogue of a bit. Unlike a classical bit which has a value of either one or zero, a qubit is capable of existing as a linear combination of both values. More precisely a linear combination of two basis states, $ket(0)$ and $ket(1)$. However, when measured this qubit will collapse into one of the two basis states probabilistically. The definition of a qubit is show below: 
@@ -123,17 +123,19 @@ $
 Where $tilde("CU")_(c,t)$ is the full-system matrix of a controlled two-qubit gate, and the projectors $P_0$ and $P_1$ are defined as:
 
 $
-  ket(0)bra(0) = #p0_matrix, quad ket(1)bra(1) = #p1_matrix
+  P_0 = ket(0)bra(0) = #p0_matrix, quad P_1 = ket(1)bra(1) = #p1_matrix
 $
 
 Since $I ket(psi)=ket(psi)$ leaving the state unchanged, $P_0 times.o I$ represents the branch where the controlled gate is not triggered, $P_0$ projects the identity matrix onto the corresponding amplitudes. By the same token, $P_1$ maps the operation $U$ onto the amplitudes where the control qubit is activated. Notably this requires two full-system matrices to be constructed and then combined before being applied.
 
 It is evident that gate application on many-qubit statevectors has an enormous computational cost. With the full-system matrices having a space complexity of $O(4^n)$ and controlled two-qubit gates requiring two full-system matrices. In addition while these operations are being executed the statevector still needs to remain in memory with its own space complexity of $O(2^n)$.
 
-== Direct indexing
+== Direct pair multiplication
 Rather than attempting to apply a full-system matrix to the entire statevector, there is an approach that limits a simulations space complexity to that of the statevectors while also improving execution time with workloads much more suited to modern processors.
 
-This approach splits the statevector into smaller two-dimensional subspaces, pairs of amplitudes whose basis states differ only in the target qubits value. Then each pair is multiplied independently by the simpler $2 times 2$ gate matrix itself. The operation can be illustrated as:
+This approach decomposes the statevector into two-dimensional subspaces composed of amplitude pairs whose basis states binary representations differ only at the target qubit position $q$. For each 
+
+Then each pair is multiplied independently by the simpler $2 times 2$ gate matrix itself. The operation can be illustrated as:
 
 $
   mat(
