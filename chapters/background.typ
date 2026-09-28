@@ -62,7 +62,7 @@ $
   ket(psi)=sum_(i = 0)^(2^n - 1) alpha_i ket(i)
 $
 
-where $ket(i)$ is the $i$th basis state and $alpha_i$ is its associated probability amplitude. Although the basis states are typically numbered in binary notation rather than decimal i.e $ket(010)$. The normalisation condition can then be generalised to:
+where $ket(i)$ is the $i$th basis state and $alpha_i$ is its associated probability amplitude. Basis states are typically numbered in binary notation rather than decimal i.e $ket(010)$. The normalisation condition can then be generalised to:
 
 $
   sum_(i = 0)^(2^n - 1) |alpha_i|^2 = 1
@@ -95,7 +95,7 @@ Which has the property of swapping the amplitudes of two qubits unconditionally.
 
 #pagebreak()
 
-Another key type of gate is controlled gates, these are what allow branching and more complex behaviour in quantum circuits. Common controlled two-qubit gates include the controlled Pauli matrices:
+Another key type of gate is the controlled gate, this is what allows branching and more complex behaviour in quantum circuits. Common controlled two-qubit gates include the controlled Pauli matrices:
 
 $
   "CNOT"=#cnot_matrix, quad "CY"=#cy_matrix, "CZ"=#cz_matrix,
@@ -104,7 +104,7 @@ $
 The way these gates function is that they 'take' two qubits, a control and a target qubit. If the control qubit is one then they apply the single-qubit pauli gate to the target qubit. However this perhaps overstates the simplicity when one takes into account the fact that in a quantum circuit the control qubit can be in a superposition of both one and zero simultaneously.
 
 == Kronecker products
-In section 2.2 it was stated that to apply a gate to a qubit matrix-vector multiplication is used. But this isn't as simple once the state is made up of multiple qubits, since valid matrix-vector multiplication requires that the number of columns in the matrix are equal to the number of rowas in the column vector. So to apply a gate matrix to a $n$-qubit statevector, the matrix must be expanded to a full-system matrix with $2^n$ columns. This is done by using the kronecker product.
+In section 2.2 it was stated that to apply a gate to a qubit matrix-vector multiplication is used. #text(red)[*Fix*] But this isn't as simple once the state is made up of multiple qubits, since valid matrix-vector multiplication requires that the number of columns in the matrix are equal to the number of rows in the column vector. So to apply a gate matrix to a $n$-qubit statevector, the matrix must be expanded to a full-system matrix with $2^n$ columns. This is done by using the kronecker product.
 
 The Kronecker product, denoted by $times.o$, combines two smaller matrices to produce a larger matrix, where every element in the first matrix is multiplied by the second matrix. If matrix $A$ has dimensions $a times b$ and matrix B has dimensions $c times d$ then $A times.o B$ produces a matrix with dimensions $a c times b d$.
 
@@ -130,12 +130,12 @@ Since $I ket(psi)=ket(psi)$ leaving the state unchanged, $P_0 times.o I$ represe
 
 It is evident that gate application on many-qubit statevectors has an enormous computational cost. With the full-system matrices having a space complexity of $O(4^n)$ and controlled two-qubit gates requiring two full-system matrices. In addition while these operations are being executed the statevector still needs to remain in memory with its own space complexity of $O(2^n)$.
 
-== Direct pair multiplication
-Rather than attempting to apply a full-system matrix to the entire statevector, there is an approach that limits a simulations space complexity to that of the statevectors while also improving execution time with workloads much more suited to modern processors.
+== Direct pair multiplication (DPM)
+Rather than attempting to apply a full-system matrix to the entire statevector, there is an approach that limits a simulation's space complexity to that of the statevector's while also improving execution time with workloads much more suited to modern processors.
 
-This approach decomposes the statevector into two-dimensional subspaces composed of amplitude pairs whose basis states binary representations differ only at the target qubit position $q$. For each 
+This approach decomposes the $2^n$-element statevector into $2^(n-1)$ disjoint, two-dimensional subspaces. Specifically, each subspace groups pairs of amplitudes whose binary representations differ only at the target qubits position $q$. For each pair the first element is at base index $n_i$ where qubit $q$ has a value of zero and the second element at index $n_i + 2^q$.
 
-Then each pair is multiplied independently by the simpler $2 times 2$ gate matrix itself. The operation can be illustrated as:
+Each pair can then be multiplied independently by the base $2 times 2$ gate matrix itself, before writing the resulting vectors elements back into their original positions in the statevector @jones_quest_2019:
 
 $
   mat(
@@ -150,15 +150,15 @@ $
   )
 $
 
-Where $n_i$ is the index of the first amplitude of the $i$th pair and the amplitudes are separated by $2^q$ where $q$ is the index of the target qubit @jones_quest_2019.
+#divider()
 
 Iterating through the $2^(n-1)$ pairs means each amplitude in the statevector is operated on once. Applying the gate to each pair is mathematically equivalent to applying the full-system matrix to the entire statevector in one operation.
 
-The resulting amplitudes can be written back into the statevector while the while the two necessary original amplitudes and the four matrix coefficients are already available in memory. This removes any non-constant space complexity terms that are being added to the statevectors already harsh $O(2^n)$ space complexity during gate application.
+The resulting amplitudes can be written back into the statevector while the while the two necessary original amplitudes and the four matrix coefficients are already available in memory. This removes any non-constant space complexity terms that are being added to the statevectors already harsh $O(2^n)$ space complexity during gate application. However, while DPM improves on the full-system strategy's cost, is there a strategy that can decrease memory further?
 
 // Stabilizer
 == Gottesman-Knill theorem
-Updating the statevector pair by pair is orders of magnitude more efficient however is still bound by the $O(2^n)$ space required to store the amplitudes themselves. The GK theorem poses the question: can the state of a quantum system be represented more compactly and if so for what classes of circuits does this hold?
+The GK theorem poses the question: can the state of a quantum system be represented more compactly and if so for what classes of circuits does this hold?
 
 The answer is yes, with stabilizer circuits. This is a class of circuit that is composed entirely of Clifford gates, a set of gates that includes but is not limited to: the Pauli $X$, $Y$ and $Z$ gates, the Hadamard gate and the $"CNOT"$ gate. The set of possible states allowed by such gates allows a different representation, rather than tracking the amplitudes of every basis state, it can be described by the Pauli operators that stabilise it.
 

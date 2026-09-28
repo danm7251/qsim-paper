@@ -1,30 +1,18 @@
 #heading[Design & Implementation]
 
-#text(red)[*Note: Restructure, explain kernel algorithms in more detail, reduce repitition - Sunday 1.5h*]
-
-#text(red)[
-  *New Plan:*
-  *- Development Environment*
-  *- Simulator Architecture*
-  *- Statevector Representation*
-  *- Gate application*
-  *- Hardware acceleration (where does config go)*
-  *- Testing, benchmarking and observability*
-]
-
 == Development environment
 
 Rust was chosen as the primary development language for its performance and safety guarantees while still allowing unsafe, direct memory management if necessary. Its zero-cost abstractions allow higher level intuitive interfaces to be used without causing additional runtime overhead.
 
 Git was used for version control throughout so that branches could be used to develop experimental features in isolation from the main implementation. Additionally this allowed individual experiments and benchmarks to be associated with specific commits for reproducibility.
 
-GitHub was used to host the source code and provide continuous integration through GitHub Actions. Automated unit tests were run on pushes to the default branch, on Windows and Ubuntu environments, providing correctness checks across platforms and ensuring that changes did not break logic and or unnaceptably compromise accuracy.
+GitHub was used to host the source code and provide continuous integration through GitHub Actions. Automated unit tests were run on pushes to the default branch, on Windows and Ubuntu environments, providing correctness checks across platforms, ensuring that changes did not introduce subtle logic bugs and or unnaceptably compromise accuracy.
 
-== Library Architecture
+== Library Architecture & Implementation
 
-Intro par
+A software library was selected as the project format. This way the simulation can be exposed through a programmatic interface rather than being directly coupled to a particular application or user interface. In future it could be extended with a simulator application that utilises the library while the functionality remains independently accessible.
 
-== Library implementation
+The library can be organised into three principle layers: the circuit representation, simulation state objects and kernels. The circuit representation describes the operations to be executed, simulation objects maintain simulation state and coordinate execution and kernels implement the mathematical transformations required by operations.
 
 === Circuit Representation
 
@@ -34,41 +22,43 @@ The core component of this interface is the #text(purple)[Instruction] enum whic
 
 === Statevector
 
-A simulation starts by initialising a simulation object such as a statevector, with the desired number of qubits. That statevector then owns the quantum state being simulated and supplies the interface through which operations can be applied. To progress the simulation an instruction or a circuit as a collection of instructions must be passed to the statevector for execution.
+A simulation starts by initialising a simulation object such as a statevector, with the desired number of qubits. That statevector then owns the quantum state being simulated using a heap-backed buffer of amplitudes and supplies the interface through which operations can be applied. To progress the simulation an instruction or a circuit as a collection of instructions must be passed to the statevector for execution.
 
 The statevector then acts as a validation and dispatch layer above the operations themselves during execution, while owning the amplitude buffer. By first matching on the instruction the statevector can extract the parameters to perform the necessary validation checks. Validation within the instructions themselves was considered, but checks such as target qubit bounds depend on the state itself. Keeping it in the statevector avoids splitting related checks between the instructions and the statevector object.
 
-After validation the 
+After validation, the statevector translates the qubit indices into statevector strides for DPM, its primary simulation strategy, where a stride represents the distance between corresponding amplitudes in the amplitude buffer. This is determined by the position of the target qubit within the chosen big-endian structure. Despite appearing to be a low-level implementation detail, generating the strides in this layer, decouples the kernels that will recieve them from the memory layout of the buffer.
 
-#text(red)[*Unfinished*]
+The statevector also encapsulates a performance configuration that specifies the hardware features to be utilised during execution. This configuration can be resolved automatically at runtime by detecting the host's CPU capabilities or it can be supplied explicitly to request a specific configuration, which is then validated against available host features. This validation is necessary because executing a kernel that uses unsupported hardware features can result in undefined behaviour.
 
-#text(red)[*Kernels*]
+#text(red)[*Reword paragraph below.*]
 
-#text(red)[*Measurement / Loose Ends*]
+Measurement is handled directly by the statevector following a different execution path to instructions. As it returns values unlike unitary operations such as gate application, this makes it awkward to fit into the existing circuit representation that lacks a mechanism for collecting results. Calculating measurement probabilities requires iterating over the amplitude buffer according to the target qubit similarly to DPM. The probability calculation is currently implemented directly in the statevector rather than through kernel dispatch despite these similarities. Probability calculation, could be separated into dedicated kernels in a future implementation allowing hardware acceleration. Measurement calculates the marginal probabilities, samples a random distribution constructed from these to determine the outcome and subsequently collapses and renormalises the state.
 
-=== Statevector backend
+=== Kernels
 
-#text(red)[*Note: Consider how specific is too specific*]
+#text(red)[*Reword two paragraphs below.*]
 
-The statevector representation itself is extraordinarily simple, the only requirement is a heap-backed ordered mutable buffer of complex numbers. That way the basis state is simply encoded by the position of the amplitude in the statevector using big-endian ordering.
+The kernels are separated from the main statevector implementation in a submodule containing four implementations: a portable implementation, an FMA implementation and an AVX implementation. Each implementation performs equivalent operations using different levels of hardware-specific optimisation. The portable kernels provide a both DPM and full-system matrix operations, the FMA kernel provides fused multiply-add accelerated DPM operations while the AVX kernel provides SIMD operations that follow from DPM but are adapted to process multiple pairs simultaneously.
 
-For this a #text(purple)[`Vector`] type was established, a thin wrapper around a #text(purple)[`Vec<Complex<f64>>`]. The #text(purple)[`Complex`] type is provided by the 'num_complex' crate. The statevector object owns the amplitude vector by composition and is responsible for interpreting instructions and applying operations to it.
+In order to simplify dispatch all kernel implementations share the same function naming styles and take the same parameters, a mutable reference to the amplitude buffer, a four element matrix and a target stride calculated by the statevector.
 
-Instructions pass through a key #text(purple)[`execute`] method that matches on the input and routes it to the appropriate operation, this keeps the external instruction separate from any mathematical input necessary such as selecting the gate matrix. Before handing over to kernels the qubit indices provided in the instruction are validated before being converted to the stride format the kernels require. With big-endian ordering the stride of a target qubit $t$ in an $n$-qubit state can be calculated as $2^(\(n-t-1\))$. This stride identifies the distance between two amplitudes whose basis states differ only in the target qubit. This is the information that allows matrix application per pair instead of constructing a full system matrix. For two-qubit controlled operations both the control and target stride must be calculated after undergoing more validation conditions. 
+==== Portable DPM kernels
 
-The statevector also needs to provide a gate matrix as well as a mutable reference to the amplitude vector. The matrices are represented using the #text(purple)[`SquareMatrix`] type, which stores elements in a row-major format and stores the dimension also. Standard matrices are constructed with dedicated public constructors in the matrix module. Parameterised gates such as the rotation or controlled-rotation gates take a supplied angle. As only individual pairs are operated on, only the four element basic operator gates are necessary for single-qubit gates.
+This is the baseline DPM implementation designed to be the baseline strategy executed with no hardware feature requirements. It can conceptually be split into two categories, functions that traverse the amplitudes and identify pairs of amplitudes and a function that, given these pairs and a matrix, performs the matrix-vector multiplication.
 
-=== Configuration
+The single-qubit gate kernel consists of an outer loop that walks through the statevector in blocks. Each block contains two halves, each the length of a target stride, corresponding to a different value of the target qubit. An inner loop then traverses the first half of each block pairing each amplitude with the corresponding amplitude one target stride ahead.
 
-The statevector is also composed of a configuration structure which allows enabling hardware acceleration such as FMA or AVX. It can either be created explicitly and then supplied during construction, or via the default constructor where it is populated automatically after verifying which hardware-specific features are available on the host machine. If created explicitly however, the host machine capabilities are still validated to ensure unsupported code blocks aren't entered. This configuration is then used during routing when selecting the optimal kernel for the operation.
+#text(red)[*Reword two paragraphs below.*]
 
-#text(red)[*Note: Structure below sucks, explain SIMD algorithm*]
+The controlled two-qubit gate kernel consists adds an extra condition to consider, only amplitudes in which the value of the control qubit is one can be updated. If the control strides are more significant then the first loop walks the statevector in blocks with halves of a control stride. Then the single-qubit gate kernels algorithm can be applied to each block where the control qubit is equal to one. If the target stride is more significant then the outer loop traverses the target blocks before a second loop traverses the control blocks within each target block and a final loop pairs amplitudes in the resulting ranges.
 
-=== Kernel implementations
+Matrix application for the kernels is handed of to a dedicated helper function. The pair of amplitudes are copied by value into a buffer on the stack and a zeroed stack buffer for the results is initialised before performing the matrix-vector multiplication whereupon the existing statevector amplitudes are overwritten with the results. This function can be considered the most performance-critical point in the entire program and thus every effort was made to eliminate unnecessary overhead.
 
-The gate application operations are separated from the statevector structure into a submodule containing three kernel implementations: a portable implementation, an FMA implementation and an AVX implementation.
+==== FMA DPM kernels
 
-The portable implementation provides the baseline hardware independent kernels. It operates directly on the amplitudes using ordinary scalar arithmetic. It contains both the direct index and full-system matrix approach. The latter which is kept for benchmarking but has been depracated in favour of the former.
+A set of kernels with traversals algorithmically identical to the portable ones but arithmetic changes to the matrix application. During matrix-vector application fused multiply-add functions are used.
+
+#divider()
 
 The FMA kernels follow the same algorithms as the portable direct indexing kernels but use fused multiply-add operations for the real and imaginary components of complex multiplication. These kernels are compiled with the `fma` target feature to ensure the compiler emits fused-multiply-add assembly and are only selected when the host machine has been verified to support FMA.
 
