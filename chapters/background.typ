@@ -150,11 +150,13 @@ $
   )
 $
 
-#divider()
-
 Iterating through the $2^(n-1)$ pairs means each amplitude in the statevector is operated on once. Applying the gate to each pair is mathematically equivalent to applying the full-system matrix to the entire statevector in one operation.
 
-The resulting amplitudes can be written back into the statevector while the while the two necessary original amplitudes and the four matrix coefficients are already available in memory. This removes any non-constant space complexity terms that are being added to the statevectors already harsh $O(2^n)$ space complexity during gate application. However, while DPM improves on the full-system strategy's cost, is there a strategy that can decrease memory further?
+The resulting amplitudes can be written back into the statevector while the while the two necessary original amplitudes and the four matrix coefficients are already available in memory. This removes any non-constant space complexity terms that are being added to the statevectors significant $O(2^n)$ space complexity during gate application.
+
+#divider()
+
+However, while DPM improves on the full-system strategy's cost, is there a strategy that can decrease memory further?
 
 // Stabilizer
 == Gottesman-Knill theorem
