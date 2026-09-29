@@ -1,38 +1,38 @@
 #heading[Results]
 
-This chapter compares the correctness and computational cost of the various algorithms and approaches taken. It examines how execution time and memory usage evolve over an increasing number of qubits.
+This chapter compares the correctness and computational cost of the various strategies taken. It examines how execution time and memory usage evolve over an increasing number of qubits. In the majority of cases logarithmic graphs are preferred due to the exponential nature of the data.
 
 == Experimental configuration & Methodology
 
 The following results were achieved using a desktop computer equipped with a Ryzen 5 1600 processor and 16 GB of RAM. The operating system was CachyOS, a Linux distribution. The benchmarks were compiled and run on the nightly-2026-05-27 Rust toolchain.
 
-#text(red)[*Note: Provide a commit hash on main branch with all experiments ready to run*]
-
 Each experiment that measured execution time was run using Criterion's benchmarking harness. Before collecting measurements, Criterion performed a three second warm-up period during which the benchmark is repeatedly executed without measurement in order to allow the system and host machines hardware to adapt to the load. It then ran benchmarks repeatedly over thousands of iterations to obtain 100 samples. It then provided a statistical analysis of said samples providing a mean, standard deviation and confidence intervals.
 
-Experiments that measured memory usage were run using DHAT which provides heap profiling.
+When comparing kernels directly against each other, amplitude buffers were constructed explicitly outside of the benchmark and kernels were called directly in benchmarks to remove any overhead that the validation and dispatch of the statevector object could introduce.
 
-== Full-system matrix against direct indexing
+== Full-system matrix against portable DPM
 
-The first comparison evaluates expansion of the full-system matrix against the direct indexing approach. The two approaches were benchmarked using Hadamard and CNOT gates over an increasing number of qubits. This covers both the single-qubit and controlled two-qubit kernels. To isolate qubit scaling as the independent variable, the middle qubit was always selected as a target in both kernel runs. In the $"CNOT"$ benchmarks the control qubit was always selected as zero.
+The first comparison evaluates expansion of the full-system matrix against the baseline portable DPM approach. The two strategies were benchmarked using singular Hadamard and CNOT gates over amplitude buffers containing an increasing number of qubits from $n=3$ to $n=13$ in increments of two. These experiments correspond to both the single-qubit and controlled two-qubit kernels. To isolate qubit count as the independent variable, the target was always the middle qubit and for CNOT gates the control qubit was always selected as zero.
 
 === Hadamard gate execution time
 
 #image("../assets/kronecker-h-time.svg")
 
-The difference between the two implementations increases exponentially with the number of qubits. Initially at $n=3$ the direct indexing exhibits a speedup of magnitude 19.13, by $n=13$ this factor is 44,391.94. The performance gap widens significantly as qubit count increases as the full-system matrix expansion becomes more expensive.
+The gap between the two implementations grows exponentially with the number of qubits. At $n=3$ the DPM kernel is 19.13 times faster than full-system expansion and at $n=13$ it is 44,391.94 times faster.
 
 === CNOT gate execution time
 
 #image("../assets/kronecker-cnot-time.svg")
 
-The controlled two-qubit variants of the kernels show an even larger difference. At $n=3$ a speedup of 31.03 is observed and at $n=13$ this has reached a factor of 147,010.09.
+The controlled two-qubit kernels show an even larger difference. The speedup is 31.03 at $n=3$ and 147,010.09 at $n=13$.
 
-#text(red)[*Note: Lots to talk about here should be the same as Hadamard with a difference of 4*]
+=== Execution time gains
+
+#image("../assets/ratio-dpm-full.svg")
 
 === Hadamard and CNOT gate peak memory usage
 
-Direct indexing was excluded from the following graphs, since as expected, it incurs no additional allocations aside from the statevector itself. Instead the difference in memory usage between the two full-system  matrix expansion kernels can be examined.
+DPM was excluded from the following graphs, since as expected, its gate applications triggered no additional allocations. Instead the difference in memory usage between the two full-system matrix expansion kernels can be examined.
 
 #image("../assets/kronecker-peak-mem.svg")
 
@@ -40,11 +40,9 @@ At $n=3$ the controlled two-qubit kernel consumes 1.86 times the peak memory as 
 
 == Hardware accelerated kernels
 
-The following experiments evaluate the effect of fused multiply-add operations and SIMD instructions on the execution time of direct-indexed statevector gate application.
+The following experiments evaluate the effect of fused multiply-add operations and SIMD instructions on the execution time of DPM statevector gate application.
 
 === Hadamard gate execution time over number of qubits
-
-Applying a Hadamard gate over an increasing number of qubits with the middle qubit always selected as a target to isolate qubit scaling gave the following data:
 
 #image("../assets/hardware-h-time.svg")
 
@@ -58,4 +56,10 @@ This experiment differs in the last in that the circuit size remained constant a
 
 The AVX implementation once again, consistently outperforms the other implementations, at every measurement value it can be applied to. There is an evident increase in execution time as the target approaches $n-1$. However on the final three targets there are peaks at $n-3$ and $n-1$ with a trough at $n-2$. This pattern was reproduced at various constant qubit counts.
 
-#text(red)[*Note: Run at different odd/even circuit size*]
+== Stabiliser simulator
+
+The following experiments evaluate the performance of the full statevector and stabiliser simulation objects when provided with the same circuit. The circuit consists of a Hadamard gate with a target qubit one and a CNOT gate with a target qubit zero and control qubit one.
+
+#image("../assets/stab-sv-time.svg")
+
+A graph

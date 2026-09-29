@@ -2,7 +2,7 @@
 
 == Full-system matrix expansion
 
-The execution time results show that for both types of kernel the full-system matrix expansions cost becomes increasingly impractical. Primarily the memory usage is what limits this approach.
+The full-system matrix approach constructs a $2^n times 2^n$ operator for a gate. Its cost therefore grows with $4^n$ while DPM grows with $2^n$. The measured speedup rose by a factor of roughly 2.2 per added qubit for the Hadamard gate and 2.3 for CNOT which is close to the factor of two this argument predicts. The memory results show the practical consequence. At $n=13$ the operator alone occupies 1 GiB and each added qubit quadruples it. Full-system expansion would need around 4 GiB at $n=14$ and 64 GiB at $n=16$ whereas DPM needs no allocation beyond the statevector itself.
 
 In the peak memory usage benchmarks, as direct indexing did not trigger any additional allocations the total memory usage remained at the size of the statevector, approximately 131 KB at $n=13$. In comparison, the full-system matrix implementations require far more memory to construct and apply the expanded matrix. At $n=13$, this reached approximately 1.34 GB for the single-qubit kernel and 2.42 GB for the controlled two-qubit kernel. This demonstrates that full-system matrix expansion becomes impractical quickly at relatively small circuit sizes due to its rapidly increasing memory requirements.
 
@@ -16,6 +16,8 @@ Interestingly that prediction does not hold with the difference in speedup hover
 
 == Hardware acceleration
 
+#image("../assets/avx-fma-speedup.svg")
+
 The hardware-accelerated kernels consistently reduced execution time across both experiments compared with the portable implementation. FMA showed a modest improvement, while the AVX implementation provided the largest reduction in execution time.
 
 The target experiment revealed an established pattern as the target qubit increased. Execution time surges as the x-axis approaches the final three to four qubits, despite no change in the amount of data processed. The only variable that has changed is how the accesses are distributed in memory.
@@ -25,9 +27,5 @@ After futher analysis using perf, a tool for recording hardware counters such as
 #image("../assets/instruction-count-target.svg")
 
 This data was obtained by recording instruction count over the execution of a binary that applied one thousand Hadamard gates to a 17 qubit statevector. Five measurements were taken for each target qubit in order to reduce variability introduced by runtime overhead. However maximum the standard deviation is only 0.0000231% at target qubit 9.
-
-
-
-#text(red)[*Note: Explain target feature vs algorithmic speedup - 30m*]
 
 

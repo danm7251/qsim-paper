@@ -66,8 +66,10 @@
 #include "chapters/results.typ"
 #pagebreak()
 
+/*
 #include "chapters/discussion.typ"
 #pagebreak()
+*/
 
 #include "chapters/conclusion.typ"
 #pagebreak()

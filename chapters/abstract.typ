@@ -2,6 +2,4 @@
     Abstract
 ]
 
-#text(red)[*Note: Final addition, 5-6 concise sentences.*]
-
-This paper investigates different approaches to implementing quantum circuit statevector simulators. This was done by developing a simulator from scratch and evaluating it through benchmarking and testing. The implementation operates directly on pairs of amplitudes rather than constructing full-system matrices. It also utilises fused multiply-add and SIMD instructions. #text(red)[*Results sentence.*] #text(red)[*Discussion sentence.*]
+This paper investigates different approaches to implementing quantum circuit statevector simulators and stabiliser techniques. This was done by developing a statevector simulator from scratch alongside a secondary stabiliser simulator and evaluating them through benchmarking and testing. The implementation operates directly on pairs of amplitudes rather than constructing full-system matrices. It also utilises fused multiply-add and SIMD instructions. Benchmarks showed that the single-gate and controlled two-qubit gate pair-based kernels were respectively 44,391.94 and 147,010.09 times faster than the full-system matrix approach at 13 qubits, while using 1.34 and 2.42 gigabytes less memory, and the SIMD kernel gave a further 158-225% speedup over the portable implementation. The stabiliser was 14668.68 times faster than the statevector when running the same 19-qubit circuit.
