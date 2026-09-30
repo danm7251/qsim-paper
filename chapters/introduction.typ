@@ -1,21 +1,37 @@
 = Introduction
 
-Quantum computing is an emerging technology that leverages principles of quantum mechanics at the hardware level to create computers that are capable of performing computations in a fundamentally different way to classical machines. For specific classes of problems this 'quantum advantage' can be utilised by carefully designed algorithms to achieve non-trivial improvements in computational complexity @aaronson_limits_2008.
 
-However, the field is in the Noisy Intermediate Scale Quantum (NISQ) era, characterized by processors that are constrained in size (number of qubits) and lack fault tolerance. In this context, a lack of fault tolerance means that processors are not yet stable enough to correct the errors introduced by cumulative external noise @lau_nisq_2022. Beyond these technical limitations, the hardware remains a scarce resource; it is extremely expensive to build, maintain and run a quantum computer. While cloud-based providers, such as Microsoft Azure Quantum and Amazon Braket, have improved access to quantum computing by offering Quantum-as-a-Service (QaaS), access to high-performance chips can involve long wait times and significant usage fees, which can pose an obstacle to development @ravi_quantum_2021. Due to these constraints, the ability to simulate quantum circuits on classical hardware currently remains the most practical way to develop and test quantum algorithms. Quantum circuit simulation involves evaluating the effect of a series of logic gates mathematically on a representation of a quantum state. This approach provides an environment free of the typical environmental noise inherent to current quantum hardware and is far more cost effective @cicero_simulation_2025.
 
-However, simulation comes with its own set of limitations. The core issue is the memory cost of describing a quantum state classically. The base units of quantum information are qubits (quantum bits) and the direct conventional approach is known as statevector simulation in which to fully describe a quantum system of $n$ qubits requires tracking $2^n$ individual complex amplitudes. Even on a supercomputer such as Summit @facility_summit_2018, we can only conduct algorithmic simulations of a quantum circuit up to 47 qubits, which requires 2.8 petabytes of memory @cicero_simulation_2025. Mitigating this scaling is an active area of research with many approaches that trade exactness for tractability, but in the end this limitation is not escapable, as it is an inherent consequence of mapping quantum information onto classical hardware.
+Quantum computing is an emerging technology that leverages principles of quantum mechanics at the hardware level to create computers that are capable of performing computations in a fundamentally different way to classical machines. For specific classes of problems, this 'quantum advantage' can be utilised by carefully designed algorithms to achieve non-trivial improvements in computational complexity @aaronson_limits_2008.
 
-To escape this exponential scaling, alternative techniques sacrifice flexibility or exactness to make high-qubit simulation feasible. For example the stabiliser formulism allows certain classes of quantum circuit to be simulated efficiently, but cannot handle arbitrary algorithms. Because of this, statevector simulation remains the primary approach when flexibility is required, making its computational cost a key bottleneck.
 
-To explore how this bottleneck can be mitigated, this paper aims to investigate the implementation of quantum circuit simulators, with a primary focus on statevector simulation techniques alongside exploring stabiliser simulation. For this purpose a simulator library is developed from scratch with support for single-qubit gates, controlled two-qubit gates and measurement. Different approaches for applying quantum operations to a quantum state are investigated and evaluated. The paper also explores the implementation and effects of hardware acceleration on execution time.
+
+However, the field is in the Noisy Intermediate Scale Quantum (NISQ) era, characterized by processors that are constrained in size (number of qubits) and lack fault tolerance. In this context, a lack of fault tolerance means that processors are not yet stable enough to correct the errors introduced by cumulative external noise @lau_nisq_2022. Beyond these technical limitations, the hardware remains a scarce resource; it is extremely expensive to build, maintain and run a quantum computer. While cloud-based providers, such as Microsoft Azure Quantum and Amazon Braket, have improved access to quantum computing by offering Quantum-as-a-Service (QaaS), access to high-performance chips can involve long wait times and significant usage fees, which can pose an obstacle to development @ravi_quantum_2021. Due to these constraints, the ability to simulate quantum circuits on classical hardware currently remains the most practical way to develop and test quantum algorithms. Quantum circuit simulation involves evaluating the effect of a series of logic gates mathematically on a representation of a quantum state. This approach provides an environment free of the typical environmental noise inherent to current quantum hardware and is far more cost-effective @cicero_simulation_2025.
+
+
+
+However, simulation comes with its own set of limitations. The core issue is the memory cost of describing a quantum state classically. The base units of quantum information are qubits (quantum bits) and the direct conventional approach is known as statevector simulation, in which fully describing a quantum system of $n$ qubits requires tracking $2^n$ individual complex amplitudes. Even on a supercomputer such as Summit @facility_summit_2018, we can only conduct algorithmic simulations of a quantum circuit up to 47 qubits, which requires 2.8 petabytes of memory @cicero_simulation_2025. Mitigating this scaling is an active area of research with many approaches that trade exactness for tractability, but in the end this limitation is not escapable, as it is an inherent consequence of mapping quantum information onto classical hardware.
+
+
+
+To escape this exponential scaling, alternative techniques sacrifice flexibility or exactness to make high-qubit simulation feasible. For example the stabiliser formulism allows certain classes of quantum circuits to be simulated efficiently, but cannot handle arbitrary algorithms. Because of this, statevector simulation remains the primary approach when flexibility is required, making its computational cost a key bottleneck.
+
+#pagebreak()
+
+To explore how this bottleneck can be mitigated, this paper aims to investigate the implementation of quantum circuit simulators, with a primary focus on statevector simulation techniques alongside exploring stabiliser simulation. For this purpose, a simulator library is developed from scratch with support for single-qubit gates, controlled two-qubit gates and measurement. Different approaches for applying quantum operations to a quantum state are investigated and evaluated. The paper also explores the implementation and effects of hardware acceleration on execution time.
 
 The specific objectives are:
+
 - Implement a functional quantum circuit simulator using a statevector representation.
+
 - Implement common single-qubit gates, controlled two-qubit gates and measurement.
-- Implement multiple high-level approaches to computing the application of quantum operations including full-system matrix and direct pair multiplication.
+
+- Implement multiple high-level approaches to computing the application of quantum operations, including full-system matrix and direct pair multiplication.
+
 - Implement multiple low-level approaches to computing the application of quantum operations utilising hardware acceleration.
+
 - Implement a secondary stabiliser simulator.
+
 - Evaluate the computational characteristics of approaches.
 
-Together, these objectives allow the examination of the computational cost of statevector simulation at both the algorithmic and implementation level as well an evaluation against stabiliser techniques. The following chapters will go on to discuss the underlying theory, design and implementation of the simulator, the methods used to evaluate its performance and the results of these experiments.
+Together, these objectives allow the examination of the computational cost of statevector simulation at both the algorithmic and implementation level as well as an evaluation against stabiliser techniques. The following chapters will go on to discuss the underlying theory, design and implementation of the simulator, the methods used to evaluate its performance and the results of these experiments.

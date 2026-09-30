@@ -58,7 +58,7 @@ $
 $
 
 == Statevectors
-So far a single qubit has been used however, there is not much computation that can be done with only a single qubit. Quantum algorithms typically run on many-qubit systems, so while $ket(psi)$ represented a qubit it was actually a single qubit statevector.
+So far a single qubit has been used in examples. However, there is not much computation that can be done with only a single qubit. Quantum algorithms typically run on many-qubit systems, so while in previous sections $ket(psi)$ represented a qubit it should actually be considered a single qubit statevector.
 
 A statevector represents a quantum state of $n$-qubits by using $2^n$ complex amplitudes, and when generalising across $n$ qubits it is conventionally written in the form:
 
@@ -88,7 +88,7 @@ $
   in CC^(2^n)
 $
 
-As a consequence the space complexity for a statevector must be $O(2^n)$.
+As a logical consequence of storing these amplitudes, the space complexity for a simulated statevector is $O(2^n)$.
 
 == Multi-qubit gates
 Just as with single-qubit gates a gate that acts on multiple qubits will be a matrix. The number of qubits it operates on has the following relationship with its dimensions, a $k$ qubit gate will be represented by a $2^k times 2^k$ matrix. A common two-qubit gate is the SWAP gate:
@@ -108,7 +108,7 @@ $
 The way these gates function is that they 'take' two qubits, a control and a target qubit. If the control qubit is one then they apply the single-qubit pauli gate to the target qubit. However this perhaps overstates the simplicity when one takes into account the fact that in a quantum circuit the control qubit can be in a superposition of both one and zero simultaneously.
 
 == Kronecker products
-In section 2.2 (gates), it was stated that to apply a gate to a qubit matrix-vector multiplication is used. But once the state is made up of multiple qubits, applying valid matrix-vector multiplication would fail. Since the operation requires that the number of columns in the matrix are equal to the number of rows in the column vector. So to apply a gate matrix to an $n$-qubit statevector, the matrix must be expanded to a full-system matrix with $2^n$ columns. This is done by using the kronecker product.
+In section 2.2 (gates), it was stated that to apply a gate to a qubit matrix-vector multiplication is used. But once the state is made up of multiple qubits, applying valid matrix-vector multiplication would fail. This is because the operation requires that the number of columns in the matrix are equal to the number of rows in the column vector. So to apply a gate matrix to an $n$-qubit statevector, the matrix can be expanded to a full-system matrix with $2^n$ columns. This is done by using the Kronecker product.
 
 The Kronecker product, denoted by $times.o$, combines two smaller matrices to produce a larger matrix, where every element in the first matrix is multiplied by the second matrix. If matrix $A$ has dimensions $a times b$ and matrix B has dimensions $c times d$ then $A times.o B$ produces a matrix with dimensions $a c times b d$.
 
@@ -139,9 +139,9 @@ This full-system matrix approach is therefore used as the baseline implementatio
 == Direct pair multiplication (DPM)
 Rather than attempting to apply a full-system matrix to the entire statevector, there is an approach that limits a simulation's space complexity to that of the statevector's while also improving execution time with workloads much more suited to modern processors.
 
-This approach decomposes the $2^n$-element statevector into $2^(n-1)$ disjoint, two-dimensional subspaces. Specifically, each subspace groups pairs of amplitudes whose binary representations differ only at the target qubits position $q$. For each pair the first element is at base index $n_i$ where qubit $q$ has a value of zero and the second element is at index $n_i + s$. $s$ can be defined as the stride between the two pairs where $s=2^(n - q - 1)$.
+This approach decomposes the $2^n$-element statevector into $2^(n-1)$ disjoint, two-dimensional subspaces. Specifically, each subspace groups pairs of amplitudes whose binary representations differ only at the target qubits position $q$. For each pair the first element is at base index $n_i$ where qubit $q$ has a value of zero and the second element is at index $n_i + s$ where $s$ can be defined as the stride between the two pairs as $s=2^(n - q - 1)$.
 
-Each pair can then be multiplied independently by the base $2 times 2$ gate matrix itself, before writing the resulting vectors elements back into their original positions in the statevector:
+Each pair can then be multiplied independently by the base $2 times 2$ gate matrix itself, before writing the resulting vector's elements back into their original positions in the statevector:
 
 $
   mat(
@@ -158,7 +158,7 @@ $
 
 The $2^(n-1)$ pairs collectively contain every amplitude in the statevector once. Applying the gate to each pair therefore is mathematically equivalent to applying the full-system matrix to the entire statevector in one operation. @jones_quest_2019
 
-The resulting amplitudes can be written back into the statevector while the while the two necessary original amplitudes and the four matrix coefficients are already available in memory. This adds no memory requirements other than the statevectors $O(2^n)$ space complexity during gate application.
+The resulting amplitudes can be written back into the statevector while the two necessary original amplitudes and the four matrix coefficients are already available in memory. This adds no memory requirements other than the statevectors $O(2^n)$ space complexity during gate application.
 
 Therefore DPM removes the overhead of applying gates but the statevector itself still holds $2^n$ amplitudes so memory grows exponentially with the number of qubits regardless of how gates are applied. Reducing this requires a more compact state representation which, without reducing accuracy, is only possible for a restricted class of circuit.
 
@@ -167,10 +167,19 @@ The Gottesman-Knill theorem @aaronson_improved_2004 states that a quantum circui
 
 Clifford gates are any gate that transform a Pauli operator into another Pauli operator when applied to it. Any Clifford gate can be built from a sequence of Hadamard, $S$ and $"CNOT"$ gates and the Pauli operators $X$, $Y$ and $Z$ are Clifford gates themselves.
 
-Circuits composed entirely of Clifford gates are known as stabiliser circuits, since the states they produce can always be described by the Pauli operators that stabilise them. A Pauli operator on $n$ qubits consists of $n$ single-qubit factors, one per qubit, where each factor is $I$, $X$, $Y$ or $Z$, together with an overall sign. For example $X I Z$ would apply $X$ to the first qubit and $Z$ to the third while leaving the second. A Pauli operator $P$ is said to stabilise a state $ket(psi)$ if:
+Circuits composed entirely of Clifford gates are known as stabiliser circuits, since the states they produce can always be described by the Pauli operators that stabilise them. A Pauli operator on $n$ qubits consists of $n$ single-qubit factors, one per qubit, where each factor is $I$, $X$, $Y$ or $Z$, together with an overall sign. For example $X I Z$ would apply $X$ to the first qubit and $Z$ to the third while leaving the second unchanged. A Pauli operator $P$ is said to stabilise a state $ket(psi)$ if:
 
 $
   P ket(psi) = ket(psi)
 $
 
 where applying it leaves the state unchanged. A stabiliser state of $n$ qubits can be described as list of $n$ Pauli operators. Each operator is stored as $n$ bits marking the qubits with an $X$ factor and $n$ bits marking the qubits with a $Z$ factor ($Y$ is marked as both) plus a single bit for the sign. The whole state can thus only requires $O(n^2)$ bits rather than a statevectors $O(2^n)$ amplitudes.
+
+== Key points
+
+The above sections have summarised the three primary strategies that this paper will use to simulate quantum circuits, and also the background theory that they are built upon:
+- Full-system matrices, follow directly from the basic theory and have clear drawbacks, namely their $O(4^n)$ space complexity.
+- Direct pair multiplication is a direct upgrade, offering improvements in both space and time complexity.
+- Stabiliser simulation offers both the highest memory and runtime performance but heavily restricts the types of circuits that can be simulated.
+
+The following section will discuss how they were actually implemented.

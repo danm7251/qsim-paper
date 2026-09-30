@@ -1,7 +1,5 @@
 #heading[Design & Implementation]
 
-#text(red)[*If I had to try and put my finger on my biggest issues with this, it's that I don't seem to be able to find a structure that makes sense or feels natural. I'm also struggling to put clear boundaries between higher and lower level aspects.*]
-
 == Development environment
 
 Rust was chosen as the primary development language for its performance and safety guarantees while still allowing unsafe, direct memory management if necessary. Its zero-cost abstractions allow higher level intuitive interfaces to be used without causing additional runtime overhead.
@@ -14,17 +12,20 @@ GitHub was used to host the source code and provide continuous integration throu
 
 A software library was selected as the project format. This way the simulation can be exposed through a programmatic interface rather than being directly coupled to a particular application or user interface. In future it could be extended with a simulator application that utilises the library while the functionality remains independently accessible.
 
-The library can be organised into three principle layers: the circuit representation, simulation state objects and kernels. The circuit representation describes the operations to be executed, simulation objects maintain simulation state and coordinate execution and kernels implement the mathematical transformations required by operations.
+The following chapter will focus on four aspects of the library: the circuit representation, the statevector simulator, the statevector kernels and the stabiliser simulator.
 
 === Circuit Representation
 
-This project seperates the description of a quantum circuit from the statevector object used to simulate its execution. Quantum operations are represented as instructions defining the operations themselves and contain parameters pertaining to non-implementation specific information. For example rotation gate angles and qubit targeting indices. This results in a clean interface that allows different simulation objects to use different state representations while sharing the same circuit representation, as shown by the statevector and stabiliser implementations.
+This project separates the description of a quantum circuit from the statevector object used to simulate its execution. Quantum operations are represented as instructions defining the operations themselves and contain parameters pertaining to non-implementation specific information, for example rotation gate angles and qubit targeting indices. This results in a clean interface that allows different simulation objects to use different state representations while sharing the same circuit representation, as shown by the statevector and stabiliser implementations.
 
 The core component of this interface is the Instruction enum which provides variants describing different quantum operations, mainly gates. Each variant defines the parameters that may accompany it explicitly, creating a fixed structure for required inputs. The use of an enum also offers a common type the operations can be stored and processed through, making it straightforward to express an entire circuit as an ordered collection of instructions. That ability naturally lends itself to future extensions such as circuit level optimisation as the sequence could be analysed and transformed before execution.
 
 === Statevector
 
-A simulation starts by initialising a simulation object such as a statevector, with the desired number of qubits. That statevector then owns the quantum state being simulated using a heap-backed buffer of amplitudes and supplies the interface through which operations can be applied. To progress the simulation an instruction or a circuit as a collection of instructions must be passed to the statevector for execution.
+A simulation starts by initialising a statevector simulator with the desired number of qubits. The simulator owns the quantum state being simulated through a heap-backed buffer of amplitudes and exposes three key external methods through which operations can be applied:
+- Single execution
+- `execute_all`
+- `measure`
 
 The statevector then acts as a validation and dispatch layer above the operations themselves during execution, while owning the amplitude buffer. By first matching on the instruction the statevector can extract the parameters to perform the necessary validation checks. Validation within the instructions themselves was considered, but checks such as target qubit bounds depend on the state itself. Keeping it in the statevector avoids splitting related checks between the instructions and the statevector object.
 
@@ -36,7 +37,7 @@ Qubit measurement is handled directly by the statevector and follows a different
 
 === Kernels
 
-The kernels are separated from the main statevector implementation in a submodule containing four implementations: portable, FMA and AVX. Each performs equivalent operations using different levels of hardware-specific optimisation. The portable implementation provides the DPM kernels and, for reference, the full-system matrix kernels, the FMA implementation provides DPM kernels that use fused multiply-add operations for arithmetic and the AVX implementation provides SIMD single-qubit kernels that adapt DPM but to process multiple amplitude pairs simultaneously. In order to simplify dispatch, all kernels share the same function signatures: a mutable slice of the amplitude buffer, a four element matrix and a target stride calculated by the statevector (controlled two-qubit kernels also require a control stride).
+A kernel refers to one of the performance-critcial functions that act on the amplitudes. The kernels are separated from the main statevector implementation in three submodules, based on hardware instruction sets: portable, FMA and AVX. The portable module contains the full-system matrix kernels for reference, alongside the standard DPM ones. The FMA implementation provides DPM kernels that use fused multiply-add operations for arithmetic and the AVX implementation provides SIMD single-qubit kernels that adapt DPM but to process multiple amplitude pairs simultaneously. In order to simplify dispatch, all kernels share the same function signatures: a mutable slice of the amplitude buffer, a four element matrix and a target stride calculated by the statevector (controlled two-qubit kernels also require a control stride).
 
 ==== Portable DPM kernels
 

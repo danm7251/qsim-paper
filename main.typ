@@ -30,28 +30,24 @@
 #set heading(numbering: "1.1")
 
 #[
-    #text(size: 14pt)[
+    /*#text(size: 14pt)[
         Word count: #total-words / 5k
-    ]
+    ]*/
 
     #align(center)[
         #include "chapters/title.typ"  
     ]
     #pagebreak()
-
-    #set heading(numbering: "1.")
-    #outline()
-    #pagebreak()
 ] <no-wc>
-
-/*
-#[
-    #include "chapters/plan.typ"
-] <no-wc>
-#pagebreak()
-*/
 
 #include "chapters/abstract.typ"
+#pagebreak()
+
+#include "chapters/declarations.typ"
+#pagebreak()
+
+#set heading(numbering: "1.")
+#outline()
 #pagebreak()
 
 #include "chapters/introduction.typ"
