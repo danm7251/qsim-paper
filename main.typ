@@ -30,15 +30,15 @@
 #set heading(numbering: "1.1")
 
 #[
-    /*#text(size: 14pt)[
-        Word count: #total-words / 5k
-    ]*/
+    #text(size: 14pt)[
+        #total-words
+    ]
 
     #align(center)[
         #include "chapters/title.typ"  
     ]
     #pagebreak()
-] <no-wc>
+]
 
 #include "chapters/abstract.typ"
 #pagebreak()
@@ -72,8 +72,8 @@
 
 #[
     #include "chapters/references.typ"
-] <no-wc>
+]
 
 #[
     #include "chapters/appendix.typ"
-] <no-wc>
+]

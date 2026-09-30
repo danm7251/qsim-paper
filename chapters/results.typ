@@ -16,13 +16,19 @@ The first comparison evaluates expansion of the full-system matrix against the b
 
 === Hadamard gate execution time
 
-#image("../assets/kronecker-h-time.svg")
+#figure(
+  image("../assets/kronecker-h-time.svg"),
+  caption: [Execution time of a single Hadamard gate application against the number of qubits for the full-system matrix and portable DPM methods.]
+)
 
 The gap between the two implementations grows exponentially with the number of qubits. At $n=3$ the DPM kernel is 19.13 times faster than full-system expansion and at $n=13$ it is 44,391.94 times faster.
 
 === CNOT gate execution time
 
-#image("../assets/kronecker-cnot-time.svg")
+#figure(
+  image("../assets/kronecker-cnot-time.svg"),
+  caption: [Execution time of a single CNOT gate application against the number of qubits for the full-system matrix and portable DPM methods.]
+)
 
 The controlled two-qubit kernels show an even larger difference. The speedup is 31.03 at $n=3$ and 147,010.09 at $n=13$.
 
@@ -34,7 +40,10 @@ The controlled two-qubit kernels show an even larger difference. The speedup is 
 
 DPM was excluded from the following graphs, since as expected, its gate applications triggered no additional allocations. Instead the difference in memory usage between the two full-system matrix expansion kernels can be examined.
 
-#image("../assets/kronecker-peak-mem.svg")
+#figure(
+  image("../assets/kronecker-peak-mem.svg"),
+  caption: [Peak heap memory usage of full-system matrix gate application against the number of qubits for single Hadamard and CNOT gates.]
+)
 
 At $n=3$ the controlled two-qubit kernel consumes 1.86 times the peak memory as the single-qubit kernel. At $n=13$ this factor had approached 1.80. At this point the single-qubit kernel reaches a peak memory usage of approximately 1.34 GB, while the controlled two-qubit reaches 2.42 GB.
 
@@ -44,7 +53,10 @@ The following experiments evaluate the effect of fused multiply-add operations a
 
 === Hadamard gate execution time over number of qubits
 
-#image("../assets/hardware-h-time.svg")
+#figure(
+  image("../assets/hardware-h-time.svg"),
+  caption: [Execution time of a single Hadamard gate application against the number of qubits for all three direct pair multiplication methods.]
+)
 
 All three implementations show the expected exponential increase in execution time as qubit count increases. However both hardware accelerated kernels consistently outperform the portable kernel, with a significant reduction in execution time from the AVX kernel. At $n=3$ the speedup from the FMA and AVX kernels are 1.12 and 1.80 respectively while at $n=19$ this has increased to 1.40 and 1.58.
 
@@ -52,7 +64,10 @@ All three implementations show the expected exponential increase in execution ti
 
 This experiment differs in the last in that the circuit size remained constant at $n=17$, this time the independent variable was the target qubit. Each kernel was aside from AVX was tested at all target qubit positions from zero to $n-1$. The AVX kernel cannot accept a target qubit equal to $n-1$ since the target amplitudes are interleaved with a stride equal to one. Running this experiment provided the following results:
 
-#image("../assets/hardware-h-target.svg")
+#figure(
+  image("../assets/hardware-h-target.svg"),
+  caption: [Execution time of a single Hadamard gate application against the target qubit index for all three direct pair multiplication methods.]
+)
 
 The AVX implementation once again, consistently outperforms the other implementations, at every measurement value it can be applied to. There is an evident increase in execution time as the target approaches $n-1$. However on the final three targets there are peaks at $n-3$ and $n-1$ with a trough at $n-2$. This pattern was reproduced at various constant qubit counts.
 
@@ -60,6 +75,9 @@ The AVX implementation once again, consistently outperforms the other implementa
 
 The following experiments evaluate the performance of the full statevector and stabiliser simulation objects when provided with the same circuit. The circuit consists of a Hadamard gate with a target qubit one and a CNOT gate with a target qubit zero and control qubit one.
 
-#image("../assets/stab-sv-time.svg")
+#figure(
+  image("../assets/stab-sv-time.svg"),
+  caption: [Execution time of a two gate Clifford circuit against the number of qubits for both the stabiliser and statevector simulators.]
+)
 
 A graph

@@ -162,7 +162,7 @@ The resulting amplitudes can be written back into the statevector while the two 
 
 Therefore DPM removes the overhead of applying gates but the statevector itself still holds $2^n$ amplitudes so memory grows exponentially with the number of qubits regardless of how gates are applied. Reducing this requires a more compact state representation which, without reducing accuracy, is only possible for a restricted class of circuit.
 
-== Gottesman-Knill theorem
+== Gottesman-Knill theorem and stabiliser simulation
 The Gottesman-Knill theorem @aaronson_improved_2004 states that a quantum circuit consisting only of Clifford gates can be simulated efficiently on a classical computer when it begins in a computational basis state and ends with measurements in the computational basis.
 
 Clifford gates are any gate that transform a Pauli operator into another Pauli operator when applied to it. Any Clifford gate can be built from a sequence of Hadamard, $S$ and $"CNOT"$ gates and the Pauli operators $X$, $Y$ and $Z$ are Clifford gates themselves.
@@ -175,7 +175,7 @@ $
 
 where applying it leaves the state unchanged. A stabiliser state of $n$ qubits can be described as list of $n$ Pauli operators. Each operator is stored as $n$ bits marking the qubits with an $X$ factor and $n$ bits marking the qubits with a $Z$ factor ($Y$ is marked as both) plus a single bit for the sign. The whole state can thus only requires $O(n^2)$ bits rather than a statevectors $O(2^n)$ amplitudes.
 
-== Key points
+== Summary of simulation techniques
 
 The above sections have summarised the three primary strategies that this paper will use to simulate quantum circuits, and also the background theory that they are built upon:
 - Full-system matrices, follow directly from the basic theory and have clear drawbacks, namely their $O(4^n)$ space complexity.

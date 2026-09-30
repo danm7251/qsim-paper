@@ -45,8 +45,6 @@ This is the baseline DPM implementation designed to be the baseline strategy exe
 
 The single-qubit gate kernel consists of an outer loop that walks through the statevector in blocks. Each block contains two halves, each the length of a target stride, corresponding to a different value of the target qubit. An inner loop then traverses the first half of each block pairing each amplitude with the corresponding amplitude one target stride ahead.
 
-#text(red)[*This is especially giving me great difficulty to explain, maybe I can come up with a diagram:*]
-
 The controlled two-qubit gate kernel adds one further condition: only amplitudes pairs in which the value of the control qubit is one can be updated. The traversal depends on which stride is larger. If the control stride is larger, the first loop steps through the amplitudes in blocks the size of two control strides. Then within the second half of the control block where the control qubit is one, the single-qubit gate traversal can be applied unchanged. If the target stride is larger then the outer loop traverses the amplitudes in blocks the length of two target strides, before a second loop walks through each half where the target qubit is zero and a final inner loop selects amplitudes in sub-blocks where the control is one and pairs each amplitude with another one a target stride ahead.
 
 Matrix application for the kernels is delegated to a dedicated helper function that is called once per amplitude pair. It copies the pairs by value into a buffer on the stack, initialises a second stack buffer to zero for the results, performs the matrix-vector multiplication and then overwrites the original amplitudes with the results. This function can be considered the most performance-critical point in the program as it runs once for every updated pair, so keeping the pair and its results on the stack avoids any execution time penalties due to heap allocations.
@@ -56,8 +54,6 @@ Matrix application for the kernels is delegated to a dedicated helper function t
 A set of kernels with traversals algorithmically identical to the portable ones but with arithmetic changes to the matrix application. During matrix-vector application fused multiply-add functions are used. These functions only guarantee the result and not the use of hardware FMA instructions. Therefore, the matrix application function is therefore explicitly compiled with hardware FMA instructions using compiler directives. The DPM traversals must be duplicated in this implementation in order to compile them with the same directives since despite not containing FMA instructions it is required for inlining.
 
 ==== AVX DPM kernels
-
-#text(red)[*This is especially giving me great difficulty to explain, maybe I can come up with a diagram:*]
 
 The AVX kernel follows the same traversal as the portable DPM kernel but processes two amplitude pairs per iteration using 256-bit SIMD vectors. Each vector holds four 16-byte double precision floating point values which is enough for two complex amplitudes stored as real and imaginary components. It is compiled with the AVX compiler directive to ensure that the processors SIMD YMM registers are used rather than the vectors being split across two 128-bit registers.
 
